@@ -1,6 +1,5 @@
-from src.data.fetcher import Fetcher
-from src.data.preprocessor import prepare_for_prophet
-from src.models.prophet_model import ForecastModel
+from src.data import Fetcher, prepare_for_prophet
+from src.models import ForecastModel
 from src.utils.config import load_config
 
 def main():
