@@ -1,5 +1,6 @@
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
+from src.analysis import calculate_metrics
 from src.utils.config import load_config
 
 def main():
@@ -14,6 +15,12 @@ def main():
     f = Fetcher()
     data = f.fetch(symbol, start, end)
     print(f"Got {len(data)} rows")
+    
+    # Analyze
+    print("\nData metrics:")
+    metrics = calculate_metrics(data)
+    for key, value in metrics.items():
+        print(f"  {key}: {value:.2f}")
     
     # Prepare
     print("\nPreparing data for Prophet...")
