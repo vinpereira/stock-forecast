@@ -1,13 +1,15 @@
 # Stock Forecast
 
-Forecasting stock prices with Prophet.
+Stock forecasting with Prophet.
 
 ## Setup
 ```bash
 uv sync
 ```
 
-## Usage
+## Run
 ```bash
 uv run python main.py
 ```
+
+Edit `config.yaml` to change stock and dates.
