@@ -19,8 +19,21 @@ Edit `config.yaml`:
 uv run python main.py
 ```
 
+## Tests
+```bash
+uv run pytest
+```
+
+## Output
+
+- Console: metrics and predictions
+- File: `outputs/forecast.png`
+
 ## Example
 ```bash
-# Fetch AAPL data and forecast 90 days
+# Forecast AAPL for 90 days
 uv run python main.py
+
+# Run tests
+uv run pytest -v
 ```
