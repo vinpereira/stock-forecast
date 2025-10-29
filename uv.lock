@@ -847,6 +847,7 @@ name = "stock-forecast"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "matplotlib" },
     { name = "pandas" },
     { name = "prophet" },
     { name = "pyyaml" },
@@ -855,6 +856,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "prophet", specifier = ">=1.2.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
