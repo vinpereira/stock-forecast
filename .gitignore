@@ -1,18 +1,25 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+*.py[cod]
+*.so
+.Python
+*.egg-info/
 
-# Virtual environments
-.venv
+# UV
+.venv/
+uv.lock
 
-# Data
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Data files (root level only)
+/data/
 *.csv
 *.xlsx
-data/
 
 # Outputs
 outputs/
