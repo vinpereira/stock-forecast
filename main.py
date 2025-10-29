@@ -1,6 +1,8 @@
+import os
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
 from src.analysis import calculate_metrics
+from src.visualization import plot_forecast
 from src.utils.config import load_config
 
 def main():
@@ -38,6 +40,15 @@ def main():
     
     print("\nLast 10 predictions:")
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(10))
+    
+    # Plot
+    print("\nGenerating plot...")
+    fig = plot_forecast(forecast, prophet_data)
+    
+    # Create outputs dir if needed
+    os.makedirs('outputs', exist_ok=True)
+    fig.savefig('outputs/forecast.png')
+    print("Saved to outputs/forecast.png")
 
 if __name__ == '__main__':
     main()
