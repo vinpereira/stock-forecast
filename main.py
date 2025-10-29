@@ -1,4 +1,5 @@
 import os
+import argparse
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
 from src.analysis import calculate_metrics
@@ -6,13 +7,20 @@ from src.visualization import plot_forecast
 from src.utils.config import load_config
 
 def main():
+    parser = argparse.ArgumentParser(description='Stock price forecasting')
+    parser.add_argument('--symbol', type=str, help='Stock symbol (overrides config)')
+    parser.add_argument('--days', type=int, help='Forecast days (overrides config)')
+    args = parser.parse_args()
+    
     cfg = load_config()
     
-    # Fetch
-    symbol = cfg['stock']['symbol']
+    # Use CLI args if provided, otherwise use config
+    symbol = args.symbol if args.symbol else cfg['stock']['symbol']
     start = cfg['stock']['start']
     end = cfg['stock']['end']
+    forecast_days = args.days if args.days else cfg['forecast']['days']
     
+    # Fetch
     print(f"Fetching {symbol}...")
     f = Fetcher()
     data = f.fetch(symbol, start, end)
@@ -34,7 +42,6 @@ def main():
     model.train(prophet_data)
     
     # Forecast
-    forecast_days = cfg['forecast']['days']
     print(f"\nGenerating {forecast_days}-day forecast...")
     forecast = model.predict(periods=forecast_days)
     
@@ -47,8 +54,9 @@ def main():
     
     # Create outputs dir if needed
     os.makedirs('outputs', exist_ok=True)
-    fig.savefig('outputs/forecast.png')
-    print("Saved to outputs/forecast.png")
+    filename = f'outputs/forecast_{symbol}.png'
+    fig.savefig(filename)
+    print(f"Saved to {filename}")
 
 if __name__ == '__main__':
     main()
