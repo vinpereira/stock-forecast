@@ -48,15 +48,20 @@ def main():
     print("\nLast 10 predictions:")
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(10))
     
-    # Plot
-    print("\nGenerating plot...")
-    fig = plot_forecast(forecast, prophet_data)
-    
     # Create outputs dir if needed
     os.makedirs('outputs', exist_ok=True)
-    filename = f'outputs/forecast_{symbol}.png'
-    fig.savefig(filename)
-    print(f"Saved to {filename}")
+    
+    # Save forecast to CSV
+    csv_file = f'outputs/forecast_{symbol}.csv'
+    forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_csv(csv_file, index=False)
+    print(f"\nSaved forecast to {csv_file}")
+    
+    # Plot
+    print("Generating plot...")
+    fig = plot_forecast(forecast, prophet_data)
+    png_file = f'outputs/forecast_{symbol}.png'
+    fig.savefig(png_file)
+    print(f"Saved plot to {png_file}")
 
 if __name__ == '__main__':
     main()
