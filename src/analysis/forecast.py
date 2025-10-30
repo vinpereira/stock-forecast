@@ -59,7 +59,6 @@ class ForecastAnalyzer:
         }
     
     def calculate_scenarios(self, forecast: pd.DataFrame, target_date: Optional[str] = None) -> Dict[str, float]:
-        """Calculate optimistic/expected/pessimistic scenarios."""
         if target_date is None:
             target_row = forecast.iloc[-1]
         else:
@@ -78,7 +77,6 @@ class ForecastAnalyzer:
         }
     
     def get_volatility_metrics(self, forecast: pd.DataFrame) -> Dict[str, float]:
-        """Calculate volatility metrics from forecast."""
         forecast = forecast.copy()
         forecast['ci_width'] = forecast['yhat_upper'] - forecast['yhat_lower']
         forecast['ci_pct'] = (forecast['ci_width'] / forecast['yhat']) * 100
@@ -91,3 +89,25 @@ class ForecastAnalyzer:
             'avg_ci_width': float(forecast['ci_width'].mean()),
             'max_ci_width': float(forecast['ci_width'].max())
         }
+    
+    def export_to_csv(self, forecast: pd.DataFrame, filename: str, include_components: bool = False) -> str:
+        if include_components:
+            columns = [
+                'ds', 'yhat', 'yhat_lower', 'yhat_upper',
+                'trend', 'yearly', 'weekly', 'holidays'
+            ]
+            columns = [col for col in columns if col in forecast.columns]
+            export_df = forecast[columns].copy()
+        else:
+            export_df = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].copy()
+        
+        export_df.columns = [
+            'Date', 
+            'Forecast', 
+            'Lower_Bound_95%', 
+            'Upper_Bound_95%'
+        ] if not include_components else export_df.columns
+        
+        export_df.to_csv(filename, index=False)
+        print(f"✓ Forecast exported to: {filename}")
+        return filename
