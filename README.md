@@ -7,13 +7,6 @@ Stock price forecasting with Prophet.
 uv sync
 ```
 
-## Configuration
-
-Edit `config.yaml`:
-- Change `symbol` to any stock ticker
-- Adjust date range
-- Set forecast period (days)
-
 ## Usage
 
 ### Basic
@@ -21,38 +14,29 @@ Edit `config.yaml`:
 uv run python main.py
 ```
 
-### With CLI arguments
+### With arguments
 ```bash
-# Override symbol
-uv run python main.py --symbol GOOGL
-
-# Override forecast days
-uv run python main.py --days 30
-
-# Both
-uv run python main.py --symbol MSFT --days 60
-```
-
-## Tests
-```bash
-uv run pytest
-uv run pytest -v
+uv run python main.py --symbol GOOGL --days 30
 ```
 
 ## Output
 
-- Console: metrics and predictions
-- CSV: `outputs/forecast_<SYMBOL>.csv`
-- Plot: `outputs/forecast_<SYMBOL>.png`
+The system generates:
+- 📊 Forecast summary with scenarios
+- 📈 Forecast plot (`outputs/forecast_SYMBOL.png`)
+- 📁 CSV data (`outputs/forecast_SYMBOL.csv`)
+- 🎯 Optimal sell date recommendation
 
-## Examples
+## Features
+
+- ✅ Prophet time series forecasting
+- ✅ Multiple scenarios (optimistic/expected/pessimistic)
+- ✅ Optimal sell date finder
+- ✅ Volatility analysis
+- ✅ Beautiful visualizations
+- ✅ CSV export with components
+
+## Tests
 ```bash
-# Forecast AAPL for 90 days
-uv run python main.py
-
-# Forecast GOOGL for 30 days
-uv run python main.py --symbol GOOGL --days 30
-
-# Run tests
 uv run pytest -v
 ```
