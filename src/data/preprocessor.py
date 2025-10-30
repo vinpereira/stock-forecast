@@ -59,3 +59,29 @@ def prepare_for_prophet(df):
     print(f"   Date range: {result['ds'].min()} to {result['ds'].max()}")
     
     return result
+
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
+    print("🧹 Cleaning data...")
+    
+    original_len = len(df)
+    
+    # Remove duplicates
+    date_col = _find_date_column(df)
+    if date_col:
+        df = df[~df.duplicated(subset=[date_col], keep='first')].copy()
+    
+    # Handle missing values
+    price_col = _find_price_column(df, 'close')
+    if price_col:
+        missing = df[price_col].isna().sum()
+        if missing > 0:
+            print(f"   Filling {missing} missing prices")
+            df[price_col] = df[price_col].ffill().bfill()
+    
+    removed = original_len - len(df)
+    if removed > 0:
+        print(f"   Removed {removed} rows")
+    
+    print(f"   Final records: {len(df)}")
+    
+    return df
