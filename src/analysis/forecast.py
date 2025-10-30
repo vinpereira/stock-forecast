@@ -76,3 +76,18 @@ class ForecastAnalyzer:
                 (target_row['yhat_upper'] - target_row['yhat_lower']) / target_row['yhat'] * 100
             )
         }
+    
+    def get_volatility_metrics(self, forecast: pd.DataFrame) -> Dict[str, float]:
+        """Calculate volatility metrics from forecast."""
+        forecast = forecast.copy()
+        forecast['ci_width'] = forecast['yhat_upper'] - forecast['yhat_lower']
+        forecast['ci_pct'] = (forecast['ci_width'] / forecast['yhat']) * 100
+        
+        return {
+            'avg_uncertainty': float(forecast['ci_pct'].mean()),
+            'max_uncertainty': float(forecast['ci_pct'].max()),
+            'min_uncertainty': float(forecast['ci_pct'].min()),
+            'uncertainty_std': float(forecast['ci_pct'].std()),
+            'avg_ci_width': float(forecast['ci_width'].mean()),
+            'max_ci_width': float(forecast['ci_width'].max())
+        }
