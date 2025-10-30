@@ -23,6 +23,9 @@ class Fetcher:
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.droplevel(1)
         
+        # Normalize column names to lowercase
+        data.columns = data.columns.str.lower()
+        
         print(f"✅ Downloaded {len(data)} rows")
         
         if len(data) > 0:
