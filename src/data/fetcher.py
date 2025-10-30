@@ -5,6 +5,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Fetcher:
+    def validate_symbol(self, symbol: str) -> bool:
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            
+            if 'regularMarketPrice' in info or 'currentPrice' in info:
+                return True
+            return False
+        except Exception:
+            return False
+    
+    def get_stock_info(self, symbol: str) -> dict:
+        try:
+            ticker = yf.Ticker(symbol)
+            return ticker.info
+        except Exception as e:
+            print(f"⚠️  Could not fetch stock info: {e}")
+            return {}
+    
     def fetch(self, symbol, start, end):
         print(f"📥 Downloading {symbol} data from Yahoo Finance...")
         print(f"   Period: {start} to {end}")
