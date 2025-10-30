@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,28 @@ class Fetcher:
     
     def fetch(self, symbol, start, end):
         print(f"📥 Downloading {symbol} data from Yahoo Finance...")
+        
+        # Handle 'today' keyword
+        if end.lower() == 'today':
+            end = datetime.now().strftime('%Y-%m-%d')
+        
+        # Check if end date is in future
+        end_date_obj = datetime.strptime(end, '%Y-%m-%d')
+        today_obj = datetime.now()
+        
+        if end_date_obj > today_obj:
+            end = today_obj.strftime('%Y-%m-%d')
+            print(f"   ⚠️  End date in future, using today: {end}")
+        
         print(f"   Period: {start} to {end}")
+        
+        # yfinance end date is exclusive, add 1 day
+        end_inclusive = (end_date_obj + timedelta(days=1)).strftime('%Y-%m-%d')
         
         data = yf.download(
             symbol, 
             start=start, 
-            end=end, 
+            end=end_inclusive, 
             auto_adjust=True,
             progress=False
         )
