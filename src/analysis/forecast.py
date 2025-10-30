@@ -57,3 +57,22 @@ class ForecastAnalyzer:
             'confidence_range': float(optimal_row['yhat_upper'] - optimal_row['yhat_lower']),
             'days_from_now': (pd.Timestamp(optimal_row['ds']) - pd.Timestamp.now()).days
         }
+    
+    def calculate_scenarios(self, forecast: pd.DataFrame, target_date: Optional[str] = None) -> Dict[str, float]:
+        """Calculate optimistic/expected/pessimistic scenarios."""
+        if target_date is None:
+            target_row = forecast.iloc[-1]
+        else:
+            target_ts = pd.Timestamp(target_date)
+            target_row = forecast[forecast['ds'] == target_ts].iloc[0]
+        
+        return {
+            'date': target_row['ds'].strftime('%Y-%m-%d'),
+            'expected': float(target_row['yhat']),
+            'optimistic': float(target_row['yhat_upper']),
+            'pessimistic': float(target_row['yhat_lower']),
+            'range': float(target_row['yhat_upper'] - target_row['yhat_lower']),
+            'uncertainty': float(
+                (target_row['yhat_upper'] - target_row['yhat_lower']) / target_row['yhat'] * 100
+            )
+        }
