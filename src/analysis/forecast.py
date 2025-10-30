@@ -111,3 +111,48 @@ class ForecastAnalyzer:
         export_df.to_csv(filename, index=False)
         print(f"✓ Forecast exported to: {filename}")
         return filename
+    
+    def print_summary(self, forecast: pd.DataFrame, current_price: float, symbol: str = "Stock") -> None:
+        print("\n" + "="*80)
+        print(f"📊 FORECAST SUMMARY - {symbol}")
+        print("="*80)
+        
+        # Current info
+        print(f"\n💰 Current Price: ${current_price:.2f}")
+        print(f"📅 Current Date: {pd.Timestamp.now().strftime('%Y-%m-%d')}")
+        
+        # 30-day forecast
+        future_30d = self.get_future_values(forecast, days=30)
+        if len(future_30d) > 0:
+            last_30d = future_30d.iloc[-1]
+            change_pct = ((last_30d['yhat'] - current_price) / current_price * 100)
+            print(f"\n📈 30-Day Forecast:")
+            print(f"   Expected: ${last_30d['yhat']:.2f} ({change_pct:+.2f}%)")
+            print(f"   Optimistic: ${last_30d['yhat_upper']:.2f}")
+            print(f"   Pessimistic: ${last_30d['yhat_lower']:.2f}")
+        
+        # Full forecast
+        last_forecast = forecast.iloc[-1]
+        days_ahead = (last_forecast['ds'] - pd.Timestamp.now()).days
+        change_pct = ((last_forecast['yhat'] - current_price) / current_price * 100)
+        
+        print(f"\n📈 {days_ahead}-Day Forecast:")
+        print(f"   Expected: ${last_forecast['yhat']:.2f} ({change_pct:+.2f}%)")
+        print(f"   Optimistic: ${last_forecast['yhat_upper']:.2f}")
+        print(f"   Pessimistic: ${last_forecast['yhat_lower']:.2f}")
+        
+        uncertainty = ((last_forecast['yhat_upper'] - last_forecast['yhat_lower']) / last_forecast['yhat'] * 100)
+        print(f"   Uncertainty: ±{uncertainty:.1f}%")
+        
+        # Best sell date
+        optimal = self.find_optimal_sell_date(forecast)
+        if optimal['date']:
+            print(f"\n🎯 Optimal Sell Date: {optimal['date']}")
+            print(f"   Expected Price: ${optimal['price']:.2f}")
+            print(f"   Days from now: {optimal['days_from_now']}")
+        
+        # Volatility
+        volatility = self.get_volatility_metrics(forecast)
+        print(f"\n📊 Average Uncertainty: ±{volatility['avg_uncertainty']:.1f}%")
+        
+        print("\n" + "="*80 + "\n")
