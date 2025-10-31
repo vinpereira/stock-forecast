@@ -26,3 +26,22 @@ def plot_forecast(forecast, actual_data=None):
     ax.grid(True, alpha=0.3)
     
     return fig
+
+def plot_components(model, forecast, symbol, output_dir='./outputs'):
+    print("📊 Creating components plot...")
+    
+    if hasattr(model, 'model') and model.model is not None:
+        prophet_model = model.model
+    else:
+        raise ValueError("Model not trained")
+    
+    fig = prophet_model.plot_components(forecast, figsize=(14, 10))
+    
+    plt.tight_layout()
+    
+    plot_path = f'{output_dir}/forecast_components_{symbol}.png'
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+    print(f"   ✅ Components plot saved: {plot_path}")
+    plt.close()
+    
+    return plot_path
