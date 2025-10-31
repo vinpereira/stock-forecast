@@ -46,7 +46,7 @@ def main():
             return 1
         
         data = f.fetch(symbol, start, end)
-        print(f"   ✓ Fetched {len(data)} records")
+        print(f"   ✅ Fetched {len(data)} records")
         
         # Preprocess
         print("\n🧹 Step 3: Preprocessing Data...")
@@ -64,7 +64,7 @@ def main():
         print("\n🤖 Step 4: Training Prophet Model...")
         model = ForecastModel(config=model_config)
         model.train(prophet_data)
-        print(f"   ✓ Trained on {len(prophet_data)} samples")
+        print(f"   ✅ Trained on {len(prophet_data)} samples")
         
         # Forecast
         print(f"\n🔮 Step 5: Generating Forecasts...")
