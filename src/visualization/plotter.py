@@ -1,38 +1,19 @@
 # pyright: reportArgumentType=false
 # pyright: reportGeneralTypeIssues=false
-"""
-Visualization module for forecasts.
-
-This module provides tools for creating professional forecast plots
-with annotations, confidence intervals, and component breakdowns.
-"""
 
 import pandas as pd
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.axes import Axes
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 
 class ForecastPlotter:
-    """Create forecast plots with annotations and styling."""
-    
-    def __init__(
-        self, 
-        output_dir: str = './outputs',
-        figsize: tuple[int, int] = (16, 8),
-        dpi: int = 300
-    ):
-        """Initialize plotter.
-        
-        Args:
-            output_dir: Directory to save plots
-            figsize: Figure size (width, height) in inches
-            dpi: Resolution for saved images
-            
-        """
+    def __init__(self, output_dir: str = './outputs', figsize: tuple[int, int] = (16, 8), dpi: int = 300):
         self.output_dir = Path(output_dir)
         self.figsize = figsize
         self.dpi = dpi
@@ -40,25 +21,7 @@ class ForecastPlotter:
         # Create output directory if it doesn't exist
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
-    def plot_forecast(
-        self,
-        model: Any,
-        forecast: pd.DataFrame,
-        symbol: str,
-        show_annotations: bool = True
-    ) -> str:
-        """Create main forecast plot with 3 scenarios.
-        
-        Args:
-            model: Trained Prophet model
-            forecast: Forecast DataFrame
-            symbol: Stock symbol
-            show_annotations: Whether to show value annotations
-            
-        Returns:
-            Path to saved plot
-            
-        """
+    def plot_forecast(self, model: Any, forecast: pd.DataFrame, symbol: str, show_annotations: bool = True) -> str:
         print("📊 Creating forecast plot...")
         
         fig, ax = plt.subplots(figsize=self.figsize)
@@ -121,7 +84,7 @@ class ForecastPlotter:
         )
         
         # Add vertical line for "today"
-        import matplotlib.dates as mdates
+        
         today = pd.Timestamp.now()
         today_num = mdates.date2num(today.to_pydatetime())
         ax.axvline(
@@ -157,28 +120,12 @@ class ForecastPlotter:
         # Save plot
         plot_path = self.output_dir / f'forecast_{symbol}.png'
         plt.savefig(plot_path, dpi=self.dpi, bbox_inches='tight')
-        print(f"✓ Forecast plot saved: {plot_path}")
+        print(f"✅ Forecast plot saved: {plot_path}")
         plt.close()
         
         return str(plot_path)
     
-    def plot_components(
-        self,
-        model: Any,
-        forecast: pd.DataFrame,
-        symbol: str
-    ) -> str:
-        """Create component decomposition plot.
-        
-        Args:
-            model: Trained Prophet model (StockProphetModel wrapper)
-            forecast: Forecast DataFrame
-            symbol: Stock symbol
-            
-        Returns:
-            Path to saved plot
-            
-        """
+    def plot_components(self, model: Any, forecast: pd.DataFrame, symbol: str) -> str:
         print("📊 Creating components plot...")
         
         # Access the underlying Prophet model
@@ -195,24 +142,12 @@ class ForecastPlotter:
         # Save plot
         plot_path = self.output_dir / f'forecast_components_{symbol}.png'
         plt.savefig(plot_path, dpi=self.dpi, bbox_inches='tight')
-        print(f"✓ Components plot saved: {plot_path}")
+        print(f"✅ Components plot saved: {plot_path}")
         plt.close()
         
         return str(plot_path)
     
-    def _add_value_annotations(
-        self,
-        ax: plt.Axes,
-        forecast: pd.DataFrame,
-        model: Any
-    ) -> None:
-        """Add value annotations to the plot.
-        
-        Args:
-            ax: Matplotlib axes
-            forecast: Forecast DataFrame
-            model: Trained Prophet model
-        """
+    def _add_value_annotations(self, ax: Axes, forecast: pd.DataFrame, model: Any) -> None:
         # Get last forecast (1 year in future)
         last_idx = len(forecast) - 1
         last_date = forecast['ds'].iloc[last_idx]
@@ -277,7 +212,7 @@ class ForecastPlotter:
             
             # Posição: canto superior DIREITO (ao lado da legenda)
             ax.text(
-                0.27, 0.98,  # MUDADO: 0.02 -> 0.27 (move para direita)
+                0.27, 0.98,
                 summary_text,
                 transform=ax.transAxes,
                 fontsize=10,
@@ -286,23 +221,7 @@ class ForecastPlotter:
                 family='monospace'
             )
     
-    def create_comparison_plot(
-        self,
-        forecasts: Dict[str, pd.DataFrame],
-        symbols: list[str],
-        title: str = "Stock Comparison"
-    ) -> str:
-        """Create comparison plot for multiple stocks.
-        
-        Args:
-            forecasts: Dictionary mapping symbol to forecast DataFrame
-            symbols: List of stock symbols
-            title: Plot title
-            
-        Returns:
-            Path to saved plot
-            
-        """
+    def create_comparison_plot(self, forecasts: Dict[str, pd.DataFrame], symbols: list[str], title: str = "Stock Comparison") -> str:
         print(f"📊 Creating comparison plot for {len(symbols)} stocks...")
         
         fig, ax = plt.subplots(figsize=self.figsize)
@@ -334,30 +253,13 @@ class ForecastPlotter:
         # Save plot
         plot_path = self.output_dir / 'comparison.png'
         plt.savefig(plot_path, dpi=self.dpi, bbox_inches='tight')
-        print(f"✓ Comparison plot saved: {plot_path}")
+        print(f"✅ Comparison plot saved: {plot_path}")
         plt.close()
         
         return str(plot_path)
 
 
-def plot_forecast_simple(
-    model: Any,
-    forecast: pd.DataFrame,
-    symbol: str,
-    output_dir: str = './outputs'
-) -> tuple[str, str]:
-    """Convenience function to create both forecast and components plots.
-    
-    Args:
-        model: Trained Prophet model
-        forecast: Forecast DataFrame
-        symbol: Stock symbol
-        output_dir: Output directory
-        
-    Returns:
-        Tuple of (forecast_plot_path, components_plot_path)
-        
-    """
+def plot_forecast_simple(model: Any, forecast: pd.DataFrame, symbol: str, output_dir: str = './outputs') -> tuple[str, str]:
     plotter = ForecastPlotter(output_dir=output_dir)
     
     forecast_path = plotter.plot_forecast(model, forecast, symbol)
