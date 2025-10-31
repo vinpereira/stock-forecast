@@ -6,7 +6,7 @@ from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
 from src.analysis import ForecastAnalyzer
 from src.visualization import plot_forecast
-from src.utils.config import load_config
+from src.utils import load_config
 
 def main():
     parser = argparse.ArgumentParser(description='Stock price forecasting')
@@ -22,16 +22,17 @@ def main():
         # Load config
         print("\n🔧 Step 1: Loading Configuration...")
         cfg = load_config()
+        cfg.validate()
         
-        symbol = args.symbol if args.symbol else cfg['stock']['symbol']
-        start = cfg['stock']['start']
-        end = cfg['stock']['end']
-        forecast_days = args.days if args.days else cfg['forecast']['days']
+        stock_config = cfg.get_stock_config()
+        model_config = cfg.get_model_config()
+        forecast_config = cfg.get_forecast_config()
+        output_config = cfg.get_output_config()
         
-        # Handle 'today' keyword
-        if end.lower() == 'today':
-            end = datetime.now().strftime('%Y-%m-%d')
-            print(f"   ℹ️  Using today's date: {end}")
+        symbol = args.symbol if args.symbol else stock_config['symbol']
+        start = stock_config['start']
+        end = stock_config['end']
+        forecast_days = args.days if args.days else forecast_config['days']
         
         print(f"   Symbol: {symbol}")
         print(f"   Period: {start} to {end}")
@@ -40,8 +41,13 @@ def main():
         # Fetch
         print(f"\n📥 Step 2: Fetching Data for {symbol}...")
         f = Fetcher()
+        
+        if not f.validate_symbol(symbol):
+            print(f"❌ Invalid symbol: {symbol}")
+            return 1
+        
         data = f.fetch(symbol, start, end)
-        print(f"   ✓ Fetched {len(data)} records")
+        print(f"   ✅ Fetched {len(data)} records")
         
         # Preprocess
         print("\n🧹 Step 3: Preprocessing Data...")
@@ -57,7 +63,7 @@ def main():
         
         # Train
         print("\n🤖 Step 4: Training Prophet Model...")
-        model = ForecastModel()
+        model = ForecastModel(config=model_config)
         model.train(prophet_data)
         print(f"   ✓ Trained on {len(prophet_data)} samples")
         
@@ -67,13 +73,13 @@ def main():
         
         # Visualize
         print("\n📊 Step 6: Creating Visualizations...")
-        output_dir = cfg.get('output', {}).get('directory', './outputs')
+        output_dir = output_config.get('directory', './outputs')
         os.makedirs(output_dir, exist_ok=True)
         
         fig = plot_forecast(forecast, prophet_data)
         png_file = f'{output_dir}/forecast_{symbol}.png'
-        fig.savefig(png_file)
-        print(f"   ✓ Saved plot: {png_file}")
+        fig.savefig(png_file, dpi=output_config.get('plot_dpi', 300))
+        print(f"   ✅ Saved plot: {png_file}")
         
         # Analyze
         print("\n📈 Step 7: Analyzing Results...")
@@ -83,8 +89,9 @@ def main():
         analyzer.print_summary(forecast, current_price, symbol)
         
         # Export CSV
-        csv_file = f'{output_dir}/forecast_{symbol}.csv'
-        analyzer.export_to_csv(forecast, csv_file, include_components=True)
+        if output_config.get('save_csv', True):
+            csv_file = f'{output_dir}/forecast_{symbol}.csv'
+            analyzer.export_to_csv(forecast, csv_file, include_components=True)
         
         # Success
         print("=" * 80)
@@ -92,7 +99,8 @@ def main():
         print("=" * 80)
         print(f"\n📁 Output files saved to: {output_dir}/")
         print(f"   • Forecast plot: forecast_{symbol}.png")
-        print(f"   • CSV data: forecast_{symbol}.csv")
+        if output_config.get('save_csv', True):
+            print(f"   • CSV data: forecast_{symbol}.csv")
         print()
         
         return 0
