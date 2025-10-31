@@ -1,7 +1,5 @@
-import os
 import sys
 import argparse
-from datetime import datetime
 from pathlib import Path
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
@@ -109,9 +107,34 @@ def main():
         print()
         
         return 0
-        
+    
+    except FileNotFoundError as e:
+        print(f"\n❌ Configuration Error: {e}")
+        print("   Please ensure config.yaml exists in the project root.")
+        return 1
+    
+    except ValueError as e:
+        print(f"\n❌ Data Error: {e}")
+        print("   This may be caused by:")
+        print("   • Invalid date range")
+        print("   • No data available for the specified period")
+        print("   • Invalid stock symbol")
+        return 1
+    
+    except ImportError as e:
+        print(f"\n❌ Import Error: {e}")
+        print("\n💡 Solution: Install missing dependencies")
+        print("   Run: uv sync")
+        return 1
+    
+    except KeyError as e:
+        print(f"\n❌ Configuration Error: Missing key {e}")
+        print("   Please check your config.yaml file.")
+        return 1
+    
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n❌ Unexpected Error: {e}")
+        print("\n🐛 Debug information:")
         import traceback
         traceback.print_exc()
         return 1
