@@ -2,10 +2,11 @@ import os
 import sys
 import argparse
 from datetime import datetime
+from pathlib import Path
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
 from src.analysis import ForecastAnalyzer
-from src.visualization import plot_forecast, plot_components
+from src.visualization.plotter import ForecastPlotter
 from src.utils import load_config
 
 def main():
@@ -47,7 +48,7 @@ def main():
             return 1
         
         data = f.fetch(symbol, start, end)
-        print(f"   ✅ Fetched {len(data)} records")
+        print(f"   ✓ Fetched {len(data)} records")
         
         # Preprocess
         print("\n🧹 Step 3: Preprocessing Data...")
@@ -65,7 +66,7 @@ def main():
         print("\n🤖 Step 4: Training Prophet Model...")
         model = ForecastModel(config=model_config)
         model.train(prophet_data)
-        print(f"   ✅ Trained on {len(prophet_data)} samples")
+        print(f"   ✓ Trained on {len(prophet_data)} samples")
         
         # Forecast
         print(f"\n🔮 Step 5: Generating Forecasts...")
@@ -75,25 +76,14 @@ def main():
         print("\n📊 Step 6: Creating Visualizations...")
         output_dir = output_config.get('directory', './outputs')
         dpi = output_config.get('plot_dpi', 300)
-        os.makedirs(output_dir, exist_ok=True)
+        
+        plotter = ForecastPlotter(output_dir=output_dir, dpi=dpi)
         
         # Main forecast plot
-        forecast_path = plot_forecast(
-            model, 
-            forecast, 
-            symbol, 
-            output_dir=output_dir,
-            dpi=dpi
-        )
+        forecast_path = plotter.plot_forecast(model.model, forecast, symbol)
         
         # Components plot
-        components_path = plot_components(
-            model,
-            forecast,
-            symbol,
-            output_dir=output_dir,
-            dpi=dpi
-        )
+        components_path = plotter.plot_components(model, forecast, symbol)
         
         # Analyze
         print("\n📈 Step 7: Analyzing Results...")
@@ -112,8 +102,8 @@ def main():
         print("✅ FORECASTING COMPLETED SUCCESSFULLY!")
         print("=" * 80)
         print(f"\n📁 Output files saved to: {output_dir}/")
-        print(f"   • Forecast plot: forecast_{symbol}.png")
-        print(f"   • Components plot: forecast_components_{symbol}.png")
+        print(f"   • Forecast plot: {Path(forecast_path).name}")
+        print(f"   • Components plot: {Path(components_path).name}")
         if output_config.get('save_csv', True):
             print(f"   • CSV data: forecast_{symbol}.csv")
         print()
