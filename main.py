@@ -5,7 +5,7 @@ from datetime import datetime
 from src.data import Fetcher, prepare_for_prophet
 from src.models import ForecastModel
 from src.analysis import ForecastAnalyzer
-from src.visualization import plot_forecast
+from src.visualization import plot_forecast, plot_components
 from src.utils import load_config
 
 def main():
@@ -65,7 +65,7 @@ def main():
         print("\n🤖 Step 4: Training Prophet Model...")
         model = ForecastModel(config=model_config)
         model.train(prophet_data)
-        print(f"   ✓ Trained on {len(prophet_data)} samples")
+        print(f"   ✅ Trained on {len(prophet_data)} samples")
         
         # Forecast
         print(f"\n🔮 Step 5: Generating Forecasts...")
@@ -74,12 +74,26 @@ def main():
         # Visualize
         print("\n📊 Step 6: Creating Visualizations...")
         output_dir = output_config.get('directory', './outputs')
+        dpi = output_config.get('plot_dpi', 300)
         os.makedirs(output_dir, exist_ok=True)
         
-        fig = plot_forecast(forecast, prophet_data)
-        png_file = f'{output_dir}/forecast_{symbol}.png'
-        fig.savefig(png_file, dpi=output_config.get('plot_dpi', 300))
-        print(f"   ✅ Saved plot: {png_file}")
+        # Main forecast plot
+        forecast_path = plot_forecast(
+            model, 
+            forecast, 
+            symbol, 
+            output_dir=output_dir,
+            dpi=dpi
+        )
+        
+        # Components plot
+        components_path = plot_components(
+            model,
+            forecast,
+            symbol,
+            output_dir=output_dir,
+            dpi=dpi
+        )
         
         # Analyze
         print("\n📈 Step 7: Analyzing Results...")
@@ -99,6 +113,7 @@ def main():
         print("=" * 80)
         print(f"\n📁 Output files saved to: {output_dir}/")
         print(f"   • Forecast plot: forecast_{symbol}.png")
+        print(f"   • Components plot: forecast_components_{symbol}.png")
         if output_config.get('save_csv', True):
             print(f"   • CSV data: forecast_{symbol}.csv")
         print()
