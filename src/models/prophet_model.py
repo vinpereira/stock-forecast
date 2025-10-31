@@ -1,3 +1,6 @@
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false
+
 from prophet import Prophet
 import pandas as pd
 import logging
@@ -9,10 +12,10 @@ logging.getLogger('cmdstanpy').setLevel(logging.WARNING)
 class ForecastModel:
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
-        self.model = None
+        self.model: Optional[Prophet] = None
         self.trained = False
     
-    def train(self, data):
+    def train(self, data: pd.DataFrame) -> None:
         print("🤖 Training Prophet model...")
         
         # Create model with config
@@ -27,29 +30,30 @@ class ForecastModel:
         
         # Add holidays if configured
         country = self.config.get('country_holidays')
-        if country:
+        if country and self.model:
             try:
                 self.model.add_country_holidays(country_name=country)
                 print(f"   Added {country} holidays")
             except Exception as e:
                 print(f"   ⚠️  Could not add holidays: {e}")
         
-        self.model.fit(data)
-        self.trained = True
-        print("✅ Model trained successfully!")
+        if self.model:
+            self.model.fit(data)
+            self.trained = True
+            print("✅ Model trained successfully!")
     
-    def predict(self, periods):
-        if not self.trained:
+    def predict(self, periods: int = 365, freq: str = 'D') -> pd.DataFrame:
+        if not self.trained or not self.model:
             raise RuntimeError("Model must be trained first")
         
         print(f"🔮 Generating {periods}-day forecast...")
-        future = self.model.make_future_dataframe(periods=periods)
+        future = self.model.make_future_dataframe(periods=periods, freq=freq)
         forecast = self.model.predict(future)
         print(f"✅ Forecast generated!")
         return forecast
     
     def get_components(self, forecast: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-        if not self.trained:
+        if not self.trained or not self.model:
             raise RuntimeError("Model must be trained first")
         
         components = {}
@@ -66,11 +70,12 @@ class ForecastModel:
         return components
     
     def get_changepoints(self) -> Optional[pd.DataFrame]:
-        if not self.trained or not hasattr(self.model, 'changepoints'):
+        if not self.trained or not self.model:
             return None
         
-        changepoints = self.model.changepoints
-        if len(changepoints) > 0:
-            return pd.DataFrame({'changepoint': changepoints})
+        if hasattr(self.model, 'changepoints'):
+            changepoints = self.model.changepoints
+            if len(changepoints) > 0:
+                return pd.DataFrame({'changepoint': changepoints})
         
         return None
