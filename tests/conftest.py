@@ -1,7 +1,5 @@
 import pytest
 import pandas as pd
-from datetime import datetime, timedelta
-
 
 @pytest.fixture
 def sample_stock_data():
@@ -17,7 +15,6 @@ def sample_stock_data():
     data.set_index('Date', inplace=True)
     return data
 
-
 @pytest.fixture
 def sample_prophet_data():
     dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
@@ -25,7 +22,6 @@ def sample_prophet_data():
         'ds': dates,
         'y': 100 + pd.Series(range(len(dates))) * 0.1
     })
-
 
 @pytest.fixture
 def sample_forecast():
