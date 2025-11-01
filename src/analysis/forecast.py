@@ -3,10 +3,7 @@
 # pyright: reportReturnType=false
 
 import pandas as pd
-import numpy as np
-from typing import Optional, Dict, Any, Union
-from datetime import datetime
-
+from typing import Optional, Dict, Any
 
 def calculate_metrics(data: pd.DataFrame) -> Dict[str, float]:
     metrics = {
@@ -33,10 +30,26 @@ class ForecastAnalyzer:
         return future_forecast
     
     def find_optimal_sell_date(self, forecast: pd.DataFrame, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict[str, Any]:
+        # Handle empty forecast
+        if len(forecast) == 0:
+            return {
+                'date': None,
+                'price': None,
+                'error': 'No forecast data available'
+            }
+        
         if start_date is None:
             start_date = pd.Timestamp.now().strftime('%Y-%m-%d')
         if end_date is None:
-            end_date = forecast['ds'].max().strftime('%Y-%m-%d')
+            max_date = forecast['ds'].max()
+            # Handle NaN case
+            if pd.isna(max_date):
+                return {
+                    'date': None,
+                    'price': None,
+                    'error': 'No valid dates in forecast'
+                }
+            end_date = max_date.strftime('%Y-%m-%d')
         
         mask = (
             (forecast['ds'] >= pd.Timestamp(start_date)) & 
