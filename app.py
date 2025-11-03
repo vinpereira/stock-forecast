@@ -103,7 +103,7 @@ def create_forecast_plot(prophet_data, forecast, symbol):
     
     # Add vertical line for "today"
     today = pd.Timestamp.now()
-    today_num = mdates.date2num(today.to_pydatetime())
+    today_num = float(mdates.date2num(today.to_pydatetime()))
     ax.axvline(
         x=today_num, 
         color='orange', 
@@ -338,9 +338,12 @@ if forecast_btn:
         st.subheader("Forecast Components")
         
         # Use Prophet's plot_components
-        fig_components = model.model.plot_components(forecast)
-        st.pyplot(fig_components)
-        plt.close()
+        if hasattr(model, 'model') and model.model is not None:
+            fig_components = model.model.plot_components(forecast)
+            st.pyplot(fig_components)
+            plt.close()
+        else:
+            st.error("Model not available for component plotting")
     
     with tab3:
         st.subheader("Forecast Data")
